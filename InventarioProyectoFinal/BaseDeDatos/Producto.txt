@@ -1,0 +1,10 @@
+﻿P001|Teclado Mecánico|C001|30.00|45.00|15|True|ImagenesProductos\teclado.jpg|2024-12-01|2025-07-01
+P002|Mouse Inalámbrico|C001|12.00|20.00|10|True|ImagenesProductos\mouse.jpg|2025-01-15|2025-07-02
+P003|Monitor 24 pulgadas|C002|100.00|150.00|5|True|ImagenesProductos\monitor.jpg|2025-02-10|2025-07-01
+P004|Webcam HD|C003|18.00|30.00|0|False|ImagenesProductos\webcam.jpg|2025-01-25|2025-06-28
+P005|Memoria RAM 8GB|C004|25.00|40.00|8|True|ImagenesProductos\ram.jpg|2025-03-20|2025-07-05
+P006|Disco SSD 512GB|C004|35.00|60.00|3|True|ImagenesProductos\ssd.jpg|2025-01-10|2025-07-02
+P007|Laptop Lenovo|C005|400.00|550.00|2|True|ImagenesProductos\laptop.jpg|2025-04-15|2025-07-03
+P008|Cable HDMI|C006|3.00|6.00|25|True|ImagenesProductos\hdmi.jpg|2025-05-01|2025-07-07
+P009|Base para Laptop|C006|10.00|15.00|12|True|ImagenesProductos\base.jpg|2025-04-30|2025-07-06
+P010|Impresora HP|C007|120.00|180.00|4|False|ImagenesProductos\impresora.jpg|2024-11-15|2025-07-04
