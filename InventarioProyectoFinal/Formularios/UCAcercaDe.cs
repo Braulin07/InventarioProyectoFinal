@@ -16,5 +16,10 @@ namespace InventarioProyectoFinal.Formularios
         {
             InitializeComponent();
         }
+
+        private void UCAcercaDe_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

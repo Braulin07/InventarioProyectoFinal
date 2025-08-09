@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace InventarioProyectoFinal.Modelos
+namespace InventarioProyectoFinal.Modelos;
+
+public partial class Usuario
 {
-    //Clase modelo para los datos del usuario
-    public class Usuario
-    {
-        public string NombreUsuario { get; set; }
-        
-        public string Contraseña { get; set; }
-        public bool UsuarioActivo { get; set; }
-        public string FechaCreacion { get; set; }
+    public int UsuarioId { get; set; }
 
-        public string Rol { get; set; }
-        public string RutaImagen { get; set; }
+    public string NombreUsuario { get; set; } = null!;
 
-    }
+    public string Contraseña { get; set; } = null!;
+
+    public string Rol { get; set; } = null!;
+
+    public bool UsuarioActivo { get; set; }
+
+    public DateTime? FechaCreacion { get; set; }
+
+    public string? RutaImagen { get; set; }
 }

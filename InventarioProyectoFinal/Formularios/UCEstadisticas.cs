@@ -9,7 +9,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ScottPlot;
+using Microsoft.EntityFrameworkCore;
 using InventarioProyectoFinal.Modelos;
+using System.Globalization;
+
 
 namespace InventarioProyectoFinal.Formularios
 {
@@ -39,25 +42,25 @@ namespace InventarioProyectoFinal.Formularios
             {
                 if (sfd.ShowDialog() == DialogResult.OK)
                 {
-                    var productos = new LogicaProducto().CargarListaProductos();
-                    var categorias = new LogicaCategoria().CargarCategorias();
-
-                    var lines = new List<string>
-            {
-                "Código|Nombre|Categoría|Precio Compra|Precio Venta|Stock|Activo|Imagen|Fecha Creación|Fecha Actualización"
-            };
-
-                    foreach (var p in productos)
+                    using (var db = new StoreBPGContext())
                     {
-                        var categoria = categorias.FirstOrDefault(c => c.IdCategoria == p.IdCategoria)?.NombreCategoria ?? "Sin categoría";
+                        var productos = db.Productos.Include(p => p.Categoria).ToList();
 
-                        lines.Add($"{p.CodigoProducto}|{p.NombreProducto}|{categoria}|{p.PrecioCompra}|{p.PrecioVenta}|{p.StockCantidad}|{(p.ActivoDisponible ? "Activo" : "Inactivo")}|{p.RutaImagen}|{p.FechaCreacion}|{p.FechaActualizacion}");
+                        var lines = new List<string>
+                {
+                    "Código|Nombre|Categoría|Precio Compra|Precio Venta|Stock|Activo|Imagen|Fecha Creación|Fecha Actualización"
+                };
+
+                        foreach (var p in productos)
+                        {
+                            string categoria = p.Categoria?.NombreCategoria ?? "Sin categoría";
+
+                            lines.Add($"{p.CodigoProducto}|{p.NombreProducto}|{categoria}|{p.PrecioCompra}|{p.PrecioVenta}|{p.StockCantidad}|{(p.Disponible ? "Activo" : "Inactivo")}|{p.RutaImagen}|{p.FechaCreacion}|{p.FechaActualizacion}");
+                        }
+
+                        File.WriteAllLines(sfd.FileName, lines);
+                        MessageBox.Show("Reporte CSV generado correctamente.");
                     }
-
-                    File.WriteAllLines(sfd.FileName, lines);
-                    //File.AppendAllText(sfd.FileName, $"Generado por: {lblUsuario.Text} el {DateTime.Now:dd/MM/yyyy HH:mm}\n");
-
-                    MessageBox.Show("Reporte CSV generado correctamente.");
                 }
             }
         }
@@ -65,70 +68,30 @@ namespace InventarioProyectoFinal.Formularios
 
         private void CargarDatos()
         {
-            var movimientos = new List<MovimientoProducto>();
-
-            string[] entradas = File.Exists(@"BaseDeDatos\Entradas.txt") ? File.ReadAllLines(@"BaseDeDatos\Entradas.txt") : new string[0];
-            string[] salidas = File.Exists(@"BaseDeDatos\Salidas.txt") ? File.ReadAllLines(@"BaseDeDatos\Salidas.txt") : new string[0];
-
-            // Formato fijo para evitar errores por idioma
-            var formato = "yyyy-MM-dd HH:mm:ss";
-            var cultura = System.Globalization.CultureInfo.InvariantCulture;
-
-            foreach (var linea in entradas)
+            using (var db = new StoreBPGContext())
             {
-                var datos = linea.Split('|');
-                if (datos.Length >= 5)
+                DateTime desde = dtpDesde.Value.Date;
+                DateTime hasta = dtpHasta.Value.Date.AddDays(1).AddTicks(-1);
+                string campo = cmbCampoFiltro.Text;
+                string valor = txtValorFiltro.Text.Trim().ToLower();
+
+                var movimientos = db.MovimientoProductos
+                    .Where(m => m.Fecha >= desde && m.Fecha <= hasta)
+                    .ToList();
+
+                if (!string.IsNullOrEmpty(valor) && !string.IsNullOrEmpty(campo))
                 {
-                    movimientos.Add(new MovimientoProducto
-                    {
-                        CodigoProducto = datos[0],
-                        TipoMovimiento = "Entrada",
-                        Cantidad = decimal.TryParse(datos[1], out var cant) ? cant : 0,
-                        Subtotal = decimal.TryParse(datos[2], out var sub) ? sub : 0,
-                        Fecha = DateTime.ParseExact(datos[3], formato, cultura),
-                        Usuario = datos[4]
-                    });
+                    if (campo == "Código")
+                        movimientos = movimientos.Where(m => m.CodigoProducto.ToLower().Contains(valor)).ToList();
+                    else if (campo == "Usuario")
+                        movimientos = movimientos.Where(m => m.NombreUsuario.ToLower().Contains(valor)).ToList();
                 }
+
+                LlenarDataGridView(movimientos);
+                GenerarGraficos(movimientos);
             }
-
-            foreach (var linea in salidas)
-            {
-                var datos = linea.Split('|');
-                if (datos.Length >= 5)
-                {
-                    movimientos.Add(new MovimientoProducto
-                    {
-                        CodigoProducto = datos[0],
-                        TipoMovimiento = "Salida",
-                        Cantidad = decimal.TryParse(datos[1], out var cant) ? cant : 0,
-                        Subtotal = decimal.TryParse(datos[2], out var sub) ? sub : 0,
-                        Fecha = DateTime.ParseExact(datos[3], formato, cultura),
-                        Usuario = datos[4]
-                    });
-                }
-            }
-
-            // FILTROS
-            DateTime desde = dtpDesde.Value.Date;
-            DateTime hasta = dtpHasta.Value.Date.AddDays(1).AddTicks(-1);
-            string campo = cmbCampoFiltro.Text;
-            string valor = txtValorFiltro.Text.Trim().ToLower();
-
-            var filtrados = movimientos
-                .Where(m => m.Fecha >= desde && m.Fecha <= hasta)
-                .ToList();
-
-            if (!string.IsNullOrEmpty(valor) && !string.IsNullOrEmpty(campo))
-            {
-                if (campo == "Código")
-                    filtrados = filtrados.Where(m => m.CodigoProducto.ToLower().Contains(valor)).ToList();
-                else if (campo == "Usuario")
-                    filtrados = filtrados.Where(m => m.Usuario.ToLower().Contains(valor)).ToList();
-            }
-
-            LlenarDataGridView(filtrados);
-            GenerarGraficos(filtrados);
         }
+
 
 
         private void GenerarGraficos(List<MovimientoProducto> movimientos)
@@ -168,18 +131,26 @@ namespace InventarioProyectoFinal.Formularios
 
         private void LlenarDataGridView(List<MovimientoProducto> movimientos)
         {
-            LogicaProducto logicaProducto = new LogicaProducto();
-            dgvMovimientos.Rows.Clear();
-            foreach (var m in movimientos)
+            using (var db = new StoreBPGContext())
             {
-                dgvMovimientos.Rows.Add(m.CodigoProducto, m.TipoMovimiento, m.Cantidad, m.Subtotal, m.Fecha.ToString("dd/MM/yyyy HH:mm"), m.Usuario);
-            }
+                dgvMovimientos.Rows.Clear();
 
-            lblStock.Text = "Stock: " + logicaProducto.CargarListaProductos().Sum(p => p.StockCantidad);
-            lblVendido.Text = "Vendido: " + movimientos.Where(x => x.TipoMovimiento == "Salida").Sum(x => x.Cantidad);
-            lblVentas.Text = "Ventas: " + movimientos.Where(x => x.TipoMovimiento == "Salida").Sum(x => x.Subtotal).ToString("C");
-            lblRangoFechas.Text = $"Del {dtpDesde.Value:dd/MM/yyyy} al {dtpHasta.Value:dd/MM/yyyy}";
+                foreach (var m in movimientos)
+                {
+                    dgvMovimientos.Rows.Add(m.CodigoProducto, m.TipoMovimiento, m.Cantidad, m.Subtotal, m.Fecha.HasValue ? m.Fecha.Value.ToString("dd/MM/yyyy HH:mm") : "", m.NombreUsuario);
+                }
+
+                                        decimal totalVentas = movimientos
+                            .Where(x => x.TipoMovimiento == "Salida")
+                            .Sum(x => x.Subtotal ?? 0); // Convierte nulo a 0
+
+                lblStock.Text = "Stock: " + db.Productos.Sum(p => p.StockCantidad);
+                lblVendido.Text = "Vendido: " + movimientos.Where(x => x.TipoMovimiento == "Salida").Sum(x => x.Cantidad);
+                lblVentas.Text = "Ventas: " + totalVentas.ToString("C", CultureInfo.CreateSpecificCulture("es-DO"));
+                lblRangoFechas.Text = $"Del {dtpDesde.Value:dd/MM/yyyy} al {dtpHasta.Value:dd/MM/yyyy}";
+            }
         }
+
 
         private void txtValorFiltro_TextChanged(object sender, EventArgs e)
         {

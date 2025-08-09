@@ -63,6 +63,7 @@
             Controls.Add(richTextBox1);
             Name = "UCAcercaDe";
             Size = new Size(1014, 649);
+            Load += UCAcercaDe_Load;
             ResumeLayout(false);
             PerformLayout();
         }

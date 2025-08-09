@@ -138,10 +138,10 @@ namespace InventarioProyectoFinal.Formularios
         private void ImgLogOut_Click(object sender, EventArgs e)
         {
             // Guarda en el log
-            if (UsuarioActual != null)
+           /* if (UsuarioActual != null)
             {
                 LogicaUsuario.RegistrarSalidaSistema(UsuarioActual.NombreUsuario);
-            }
+            }*/
 
             this.Close();
         }
@@ -152,6 +152,11 @@ namespace InventarioProyectoFinal.Formularios
             uCAcercaDe.Dock = DockStyle.Fill;
             panelMain.Controls.Clear();
             panelMain.Controls.Add(uCAcercaDe);
+
+        }
+
+        private void PanelLateralUsuario_Paint(object sender, PaintEventArgs e)
+        {
 
         }
 

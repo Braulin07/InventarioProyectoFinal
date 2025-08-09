@@ -215,11 +215,11 @@
             // 
             lblTitulo.AutoSize = true;
             lblTitulo.Font = new Font("Century Gothic", 16.2F, FontStyle.Bold | FontStyle.Underline, GraphicsUnit.Point, 0);
-            lblTitulo.Location = new Point(430, 15);
+            lblTitulo.Location = new Point(412, 11);
             lblTitulo.Name = "lblTitulo";
-            lblTitulo.Size = new Size(126, 34);
+            lblTitulo.Size = new Size(204, 34);
             lblTitulo.TabIndex = 23;
-            lblTitulo.Text = "Usuarios";
+            lblTitulo.Text = "Ver Productos";
             // 
             // UCVerProductos
             // 

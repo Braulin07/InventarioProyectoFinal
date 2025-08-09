@@ -1,6 +1,7 @@
 ﻿using InventarioProyectoFinal.Interfaces;
 using InventarioProyectoFinal.Logica;
 using InventarioProyectoFinal.Modelos;
+using InventarioProyectoFinal.ModelosAuxiliares;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;

@@ -227,6 +227,7 @@
             PanelLateralUsuario.Name = "PanelLateralUsuario";
             PanelLateralUsuario.Size = new Size(220, 649);
             PanelLateralUsuario.TabIndex = 0;
+            PanelLateralUsuario.Paint += PanelLateralUsuario_Paint;
             // 
             // ImgLogOut
             // 
@@ -265,7 +266,7 @@
             pictureBoxUsuario.ShadowDecoration.CustomizableEdges = customizableEdges5;
             pictureBoxUsuario.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             pictureBoxUsuario.Size = new Size(148, 147);
-            pictureBoxUsuario.SizeMode = PictureBoxSizeMode.CenterImage;
+            pictureBoxUsuario.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBoxUsuario.TabIndex = 0;
             pictureBoxUsuario.TabStop = false;
             // 

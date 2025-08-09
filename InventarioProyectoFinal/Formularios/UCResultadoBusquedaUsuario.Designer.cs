@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges3 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
+            Guna.UI2.WinForms.Suite.CustomizableEdges customizableEdges1 = new Guna.UI2.WinForms.Suite.CustomizableEdges();
             lblUsuarioBusqueda = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lblRolBusqueda = new Guna.UI2.WinForms.Guna2HtmlLabel();
             lblEstadoBusqueda = new Guna.UI2.WinForms.Guna2HtmlLabel();
@@ -42,7 +42,7 @@
             lblUsuarioBusqueda.Font = new Font("Century Gothic", 12F, FontStyle.Bold);
             lblUsuarioBusqueda.Location = new Point(115, 16);
             lblUsuarioBusqueda.Name = "lblUsuarioBusqueda";
-            lblUsuarioBusqueda.Size = new Size(83, 25);
+            lblUsuarioBusqueda.Size = new Size(74, 25);
             lblUsuarioBusqueda.TabIndex = 1;
             lblUsuarioBusqueda.Text = "Usuario";
             // 
@@ -52,7 +52,7 @@
             lblRolBusqueda.Font = new Font("Century Gothic", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblRolBusqueda.Location = new Point(115, 47);
             lblRolBusqueda.Name = "lblRolBusqueda";
-            lblRolBusqueda.Size = new Size(33, 23);
+            lblRolBusqueda.Size = new Size(29, 23);
             lblRolBusqueda.TabIndex = 2;
             lblRolBusqueda.Text = "Rol";
             // 
@@ -62,7 +62,7 @@
             lblEstadoBusqueda.Font = new Font("Century Gothic", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblEstadoBusqueda.Location = new Point(115, 76);
             lblEstadoBusqueda.Name = "lblEstadoBusqueda";
-            lblEstadoBusqueda.Size = new Size(71, 23);
+            lblEstadoBusqueda.Size = new Size(63, 23);
             lblEstadoBusqueda.TabIndex = 3;
             lblEstadoBusqueda.Text = "Estado";
             // 
@@ -72,9 +72,10 @@
             ImagenBusqueda.InitialImage = Properties.Resources.ImagenPorDefecto;
             ImagenBusqueda.Location = new Point(15, 16);
             ImagenBusqueda.Name = "ImagenBusqueda";
-            ImagenBusqueda.ShadowDecoration.CustomizableEdges = customizableEdges3;
+            ImagenBusqueda.ShadowDecoration.CustomizableEdges = customizableEdges1;
             ImagenBusqueda.ShadowDecoration.Mode = Guna.UI2.WinForms.Enums.ShadowMode.Circle;
             ImagenBusqueda.Size = new Size(90, 80);
+            ImagenBusqueda.SizeMode = PictureBoxSizeMode.StretchImage;
             ImagenBusqueda.TabIndex = 4;
             ImagenBusqueda.TabStop = false;
             // 

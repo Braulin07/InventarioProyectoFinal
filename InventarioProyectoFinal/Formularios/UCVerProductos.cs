@@ -38,7 +38,7 @@ namespace InventarioProyectoFinal.Formularios
             txtCodigo.Text = producto.CodigoProducto;
             txtPrecioCompra.Text = producto.PrecioCompra.ToString();
             txtPrecioVenta.Text = producto.PrecioVenta.ToString();
-            chkActivo.Checked = producto.ActivoDisponible;
+            chkActivo.Checked = producto.Disponible;
 
             // Imagen
             picProducto.ImageLocation = producto.RutaImagen;
@@ -60,11 +60,11 @@ namespace InventarioProyectoFinal.Formularios
                 prod.CodigoProducto = txtCodigo.Text;
                 prod.PrecioCompra = double.Parse(txtPrecioCompra.Text);
                 prod.PrecioVenta = double.Parse(txtPrecioVenta.Text);
-                prod.ActivoDisponible = chkActivo.Checked;
+                prod.Disponible = chkActivo.Checked;
                 prod.RutaImagen = picProducto.Tag?.ToString() ?? productoActual.RutaImagen;
             }
 
-            LogicaProducto.GuardarListaProductos(lista);
+            logica.GuardarProducto(prod);
             MessageBox.Show("Producto actualizado");
             panelEditorProducto.Visible = false;
             CargarProductosEnTarjetas();

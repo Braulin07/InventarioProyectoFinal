@@ -1,18 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace InventarioProyectoFinal.Modelos
+namespace InventarioProyectoFinal.Modelos;
+
+public partial class MovimientoProducto
 {
-    public class MovimientoProducto
-    {
-        public string CodigoProducto { get; set; }
-        public string TipoMovimiento { get; set; } // "Entrada" o "Salida"
-        public decimal Cantidad { get; set; }
-        public decimal Subtotal { get; set; }
-        public DateTime Fecha { get; set; }
-        public string Usuario { get; set; }
-    }
+    public int MovimientoProductoId { get; set; }
+
+    public string CodigoProducto { get; set; } = null!;
+
+    public string TipoMovimiento { get; set; } = null!;
+
+    public double Cantidad { get; set; }
+
+    public decimal? Subtotal { get; set; }
+
+    public DateTime? Fecha { get; set; }
+
+    public string? NombreUsuario { get; set; }
+
+    public int? ProductoId { get; set; }
+
+    public virtual Producto? Producto { get; set; }
 }

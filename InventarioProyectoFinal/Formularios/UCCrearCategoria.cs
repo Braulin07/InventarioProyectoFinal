@@ -13,67 +13,70 @@ namespace InventarioProyectoFinal.Formularios
 {
     public partial class UCCrearCategoria : UserControl
     {
-        List<CategoriaProducto> categorias = new List<CategoriaProducto>();
-        string rutaArchivo = @"BaseDeDatos\CategoriaProducto.txt";
+        private StoreBPGContext dbContext;
+
         public UCCrearCategoria()
         {
             InitializeComponent();
+            dbContext = new StoreBPGContext(); // Inicializa el DbContext
         }
 
         private void UCCrearCategoria_Load(object sender, EventArgs e)
         {
-            CargarCategorias();
+            CargarCategoriasDesdeBD();
         }
 
-        private void CargarCategorias()
+        private void CargarCategoriasDesdeBD()
         {
             dgvCategorias.Rows.Clear();
-            categorias.Clear();
 
-            if (!File.Exists(rutaArchivo))
-            {
-                File.Create(rutaArchivo).Close();
-            }
+            var categoriasBD = dbContext.Categoria.ToList(); // Obtiene todas las categorías
 
-            foreach (var linea in File.ReadLines(rutaArchivo))
+            foreach (var categoria in categoriasBD)
             {
-                var partes = linea.Split('|');
-                if (partes.Length >= 2)
-                {
-                    var categoria = new CategoriaProducto
-                    {
-                        IdCategoria = partes[0].Trim(),
-                        NombreCategoria = partes[1].Trim(),
-                    };
-                    categorias.Add(categoria);
-                    dgvCategorias.Rows.Add(categoria.IdCategoria, categoria.NombreCategoria);
-                }
+                dgvCategorias.Rows.Add(categoria.CategoriaId, categoria.NombreCategoria);
             }
         }
 
         private void btnGuardarCategoria_Click(object sender, EventArgs e)
         {
-            string id = txtIdCategoria.Text.Trim();
+            string idTexto = txtIdCategoria.Text.Trim();
             string nombre = txtNombreCategoria.Text.Trim();
 
-            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(nombre))
+            if (string.IsNullOrEmpty(idTexto) || string.IsNullOrEmpty(nombre))
             {
                 MessageBox.Show("Debe completar todos los campos.");
                 return;
             }
 
-            if (categorias.Any(c => c.IdCategoria == id))
+            if (!int.TryParse(idTexto, out int id))
+            {
+                MessageBox.Show("El ID debe ser un número entero.");
+                return;
+            }
+
+            // Verificar si ya existe una categoría con el mismo ID
+            bool existe = dbContext.Categoria.Any(c => c.CategoriaId == id);
+
+            if (existe)
             {
                 MessageBox.Show("Ya existe una categoría con ese ID.");
                 return;
             }
 
-            string linea = $"{id}|{nombre}";
-            File.AppendAllText(rutaArchivo, Environment.NewLine + linea);
+            // Crear nueva categoría
+            var nuevaCategoria = new Categoria
+            {
+                CategoriaId = id,
+                NombreCategoria = nombre
+            };
+
+            dbContext.Categoria.Add(nuevaCategoria);
+            dbContext.SaveChanges(); // Guarda en la base de datos
 
             MessageBox.Show("Categoría guardada correctamente.");
             LimpiarCampos();
-            CargarCategorias();
+            CargarCategoriasDesdeBD();
         }
 
         private void LimpiarCampos()

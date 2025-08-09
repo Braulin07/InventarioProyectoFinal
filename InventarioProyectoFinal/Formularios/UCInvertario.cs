@@ -29,15 +29,15 @@ namespace InventarioProyectoFinal.Formularios
             // Lee y agrega los productos al DataGridView
             foreach (var recorrer in LogicaProducto.CargarListaProductos())
             {
-                dgvInventario.Rows.Add(recorrer.CodigoProducto, recorrer.NombreProducto, recorrer.IdCategoria, recorrer.PrecioCompra,
-                                        recorrer.PrecioVenta, recorrer.StockCantidad, recorrer.ActivoDisponible);
+                dgvInventario.Rows.Add(recorrer.CodigoProducto, recorrer.NombreProducto, recorrer.CategoriaId, recorrer.PrecioCompra,
+                                        recorrer.PrecioVenta, recorrer.StockCantidad, recorrer.Disponible);
             }
 
             /********************Tarjetas de informacion***********************************/
 
             // Total de stock de los activos
             int totalStockActivos = productos
-                .Where(p => p.ActivoDisponible) // Filtra solo los activos
+                .Where(p => p.Disponible) // Filtra solo los activos
                 .Sum(p => p.StockCantidad);
 
             //Ganancia Estimada
@@ -98,8 +98,8 @@ namespace InventarioProyectoFinal.Formularios
             var productos = LogicaProducto.CargarListaProductos();
             foreach (var p in productos)
             {
-                dgvInventario.Rows.Add(p.CodigoProducto, p.NombreProducto, p.IdCategoria, p.PrecioCompra,
-                                       p.PrecioVenta, p.StockCantidad, p.ActivoDisponible);
+                dgvInventario.Rows.Add(p.CodigoProducto, p.NombreProducto, p.CategoriaId, p.PrecioCompra,
+                                       p.PrecioVenta, p.StockCantidad, p.Disponible);
             }
         }
 
@@ -150,8 +150,8 @@ namespace InventarioProyectoFinal.Formularios
 
             foreach (var p in filtrados)
             {
-                dgvInventario.Rows.Add(p.CodigoProducto, p.NombreProducto, p.IdCategoria, p.PrecioCompra,
-                                       p.PrecioVenta, p.StockCantidad, p.ActivoDisponible);
+                dgvInventario.Rows.Add(p.CodigoProducto, p.NombreProducto, p.CategoriaId, p.PrecioCompra,
+                                       p.PrecioVenta, p.StockCantidad, p.Disponible);
             }
         }
 

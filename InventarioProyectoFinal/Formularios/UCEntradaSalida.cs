@@ -1,31 +1,29 @@
-﻿using InventarioProyectoFinal.Logica;
-using InventarioProyectoFinal.Modelos;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.IO;
+using System.Text;
+using InventarioProyectoFinal.Modelos;
+using Microsoft.EntityFrameworkCore;
+using InventarioProyectoFinal.ModelosAuxiliares;
 
 namespace InventarioProyectoFinal.Formularios
 {
     public partial class UCEntradaSalida : UserControl
     {
-        LogicaProducto logicaProducto = new LogicaProducto();
-        List<Producto> productos;
-        List<CarritoItem> carrito = new List<CarritoItem>();
+        private List<Producto> productos;
+        private List<CarritoItem> carrito = new List<CarritoItem>();
+
         public UCEntradaSalida()
         {
             InitializeComponent();
-            
         }
 
         private void UCEntradaSalida_Load(object sender, EventArgs e)
         {
-            productos = logicaProducto.CargarListaProductos();
+            using var context = new StoreBPGContext();
+            productos = context.Productos.ToList();
 
             cmbProductos.DataSource = productos;
             cmbProductos.DisplayMember = "NombreProducto";
@@ -47,26 +45,23 @@ namespace InventarioProyectoFinal.Formularios
                 }
                 else
                 {
-                    //picVistaPrevia.Image = Properties.Resources.ImagenDefault;
+                    picVistaPrevia.Image = null;
                 }
-
             }
         }
 
         private void btnAgregarCarrito_Click(object sender, EventArgs e)
         {
             var producto = (Producto)cmbProductos.SelectedItem;
-            int cantidad = int.Parse(txtCantidad.Text);
-
-            if (cantidad <= 0)
+            if (!int.TryParse(txtCantidad.Text, out int cantidad) || cantidad <= 0)
             {
-                MessageBox.Show("La cantidad debe ser mayor a 0");
+                MessageBox.Show("Cantidad inválida.");
                 return;
             }
 
             if (producto.StockCantidad < cantidad)
             {
-                MessageBox.Show("Stock insuficiente");
+                MessageBox.Show("Stock insuficiente.");
                 return;
             }
 
@@ -81,7 +76,6 @@ namespace InventarioProyectoFinal.Formularios
 
             carrito.Add(item);
             dgvCarrito.Rows.Add(item.CodigoProducto, item.NombreProducto, item.Cantidad, item.PrecioVenta, item.Subtotal);
-
             ActualizarTotal();
         }
 
@@ -93,42 +87,57 @@ namespace InventarioProyectoFinal.Formularios
 
         private void btnConfirmarSalida_Click(object sender, EventArgs e)
         {
-            foreach (var item in carrito)
-            {
-                var producto = productos.First(p => p.CodigoProducto == item.CodigoProducto);
-                producto.StockCantidad -= item.Cantidad;
-            }
-
-            LogicaProducto.GuardarListaProductos(productos);
-            File.AppendAllText(@"BaseDeDatos\Salidas.txt", GenerarLogSalida());
-            MessageBox.Show("Salida registrada.");
-            LimpiarFormulario();
-
-            // Encuentra el UCInventario activo y refresca
-            foreach (Control ctrl in this.Parent.Controls)
-            {
-                if (ctrl is UCInvertario inventario)
-                {
-                    inventario.RefrescarInventario();
-                    break;
-                }
-            }
+            ProcesarMovimiento("SALIDA");
         }
 
         private void btnConfirmarEntrada_Click(object sender, EventArgs e)
         {
+            ProcesarMovimiento("ENTRADA");
+        }
+
+        private void ProcesarMovimiento(string tipo)
+        {
+            using var context = new StoreBPGContext();
+
             foreach (var item in carrito)
             {
-                var producto = productos.First(p => p.CodigoProducto == item.CodigoProducto);
-                producto.StockCantidad += item.Cantidad;
+                var producto = context.Productos.FirstOrDefault(p => p.CodigoProducto == item.CodigoProducto);
+                if (producto == null)
+                    continue;
+
+                if (tipo == "ENTRADA")
+                {
+                    producto.StockCantidad += item.Cantidad;
+                }
+                else if (tipo == "SALIDA")
+                {
+                    if (producto.StockCantidad < item.Cantidad)
+                    {
+                        MessageBox.Show($"Stock insuficiente para el producto: {producto.NombreProducto}");
+                        continue;
+                    }
+
+                    producto.StockCantidad -= item.Cantidad;
+                }
+
+                // Registrar el movimiento
+                var movimiento = new MovimientoProducto
+                {
+                    CodigoProducto = producto.CodigoProducto,
+                    Cantidad = item.Cantidad,
+                    TipoMovimiento = tipo,
+                    Fecha = DateTime.Now,
+                    NombreUsuario = "usuario" // puedes reemplazar con usuario actual si lo tienes
+                };
+
+                context.MovimientoProductos.Add(movimiento);
             }
 
-            LogicaProducto.GuardarListaProductos(productos);
-            File.AppendAllText(@"BaseDeDatos\Entradas.txt", GenerarLogEntrada());
-            MessageBox.Show("Entrada registrada.");
+            context.SaveChanges();
+            MessageBox.Show($"{tipo} registrada.");
+
             LimpiarFormulario();
 
-            // Encuentra el UCInventario activo y refresca
             foreach (Control ctrl in this.Parent.Controls)
             {
                 if (ctrl is UCInvertario inventario)
@@ -137,34 +146,6 @@ namespace InventarioProyectoFinal.Formularios
                     break;
                 }
             }
-        }
-
-        private string GenerarLogSalida()
-        {
-            var sb = new StringBuilder();
-           // string usuario = UsuarioActual; // Variable global que defines al abrir el form UCEntradaSalida
-            string fecha = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-
-            foreach (var item in carrito)
-            {
-                sb.AppendLine($"{item.CodigoProducto}|{item.Cantidad}|{item.Subtotal}|{fecha}|Usuario");
-            }
-
-            return sb.ToString();
-        }
-
-        private string GenerarLogEntrada()
-        {
-            var sb = new StringBuilder();
-            //string usuario = UsuarioActual;
-            string fecha = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
-
-            foreach (var item in carrito)
-            {
-                sb.AppendLine($"{item.CodigoProducto}|{item.Cantidad}|{item.Subtotal}|{fecha}|usuario");
-            }
-
-            return sb.ToString();
         }
 
         private void LimpiarFormulario()
@@ -174,11 +155,9 @@ namespace InventarioProyectoFinal.Formularios
             lblTotal.Text = "Total: $0.00";
         }
 
-        
-
         private void dgvCarrito_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-
+            // Opcional: permitir eliminar elementos del carrito aquí
         }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using InventarioProyectoFinal.Logica;
 using InventarioProyectoFinal.Modelos;
+using Microsoft.Data.SqlClient;
+
 
 namespace InventarioProyectoFinal.Formularios
 {
     public partial class UCCrearUsuario : UserControl
     {
         private string rutaImagenSeleccionada = string.Empty;
+
         public UCCrearUsuario()
         {
             InitializeComponent();
@@ -16,7 +19,6 @@ namespace InventarioProyectoFinal.Formularios
             cmbRol.Items.Clear();
             cmbRol.Items.Add("ADMIN");
             cmbRol.Items.Add("USER");
-
         }
 
         private void btnCargarImagen_Click(object sender, EventArgs e)
@@ -39,53 +41,50 @@ namespace InventarioProyectoFinal.Formularios
             string contraseña = txtContraseña.Text.Trim();
             string rol = cmbRol.Text;
             bool activo = chkActivo.Checked;
-            string fechaCreacion = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+            DateTime fechaCreacion = DateTime.Now;
             string destinoImagen = "";
 
-            // Validaciones
             if (string.IsNullOrEmpty(nombreUsuario) || string.IsNullOrEmpty(contraseña) || string.IsNullOrEmpty(rol))
             {
                 MessageBox.Show("Completa todos los campos obligatorios.");
                 return;
             }
 
-            var logicaUsuario = new LogicaUsuario();
-            var usuarios = logicaUsuario.CargarUsuarios();
-
-            if (usuarios.Any(u => u.NombreUsuario.Equals(nombreUsuario, StringComparison.OrdinalIgnoreCase)))
+            using (var context = new StoreBPGContext())
             {
-                MessageBox.Show("El usuario ya existe.");
-                return;
+                bool usuarioExiste = context.Usuarios.Any(u => u.NombreUsuario == nombreUsuario);
+
+                if (usuarioExiste)
+                {
+                    MessageBox.Show("El usuario ya existe.");
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(rutaImagenSeleccionada) && File.Exists(rutaImagenSeleccionada))
+                {
+                    string carpetaDestino = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "InventarioProyectoFinal", "ImagenesUsuarios");
+                    Directory.CreateDirectory(carpetaDestino);
+
+                    destinoImagen = Path.Combine(carpetaDestino, Path.GetFileName(rutaImagenSeleccionada));
+                    File.Copy(rutaImagenSeleccionada, destinoImagen, true);
+                }
+
+                Usuario nuevo = new Usuario
+                {
+                    NombreUsuario = nombreUsuario,
+                    Contraseña = contraseña,
+                    UsuarioActivo = activo,
+                    FechaCreacion = fechaCreacion,
+                    Rol = rol,
+                    RutaImagen = string.IsNullOrEmpty(destinoImagen) ? null : destinoImagen
+                };
+
+                context.Usuarios.Add(nuevo);
+                context.SaveChanges();
+
+                MessageBox.Show("Usuario creado correctamente.");
+                LimpiarFormulario();
             }
-
-            // Guardar imagen si hay
-            if (!string.IsNullOrEmpty(rutaImagenSeleccionada) && File.Exists(rutaImagenSeleccionada))
-            {
-                string carpetaDestino = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "InventarioProyectoFinal", "ImagenesUsuarios");
-                Directory.CreateDirectory(carpetaDestino);
-
-                destinoImagen = Path.Combine(carpetaDestino, Path.GetFileName(rutaImagenSeleccionada));
-                File.Copy(rutaImagenSeleccionada, destinoImagen, true);
-            }
-
-            // Crear objeto
-            Usuario nuevo = new Usuario
-            {
-                NombreUsuario = nombreUsuario,
-                Contraseña = contraseña,
-                UsuarioActivo = activo,
-                FechaCreacion = fechaCreacion,
-                Rol = rol,
-                RutaImagen = destinoImagen
-            };
-
-            // Guardar
-            usuarios.Add(nuevo);
-            LogicaUsuario.GuardarListaUsuarios(usuarios);
-
-            MessageBox.Show("Usuario creado correctamente.");
-
-            LimpiarFormulario();
         }
 
         private void LimpiarFormulario()
